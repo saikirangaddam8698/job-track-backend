@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { jobProfile } from "../models/jobDetails";
-import { json } from "stream/consumers";
+import { applicationStatus } from "../models/jobStatus";
 
 export const jobPostDetails = async (req: Request, res: Response) => {
   try {
@@ -62,11 +62,45 @@ export const getSelectedProfile = async (req: Request, res: Response) => {
     let { selectedId } = req.query;
 
     const selectedProfile = await jobProfile.findById(selectedId);
-     console.log("Incoming selectedId:", selectedId);
     return res
       .status(200)
       .json({ message: "fetched selected profile", selectedProfile });
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Something went wrong" });
+  }
+};
+
+export const applyJob = async (req: Request, res: Response) => {
+  try {
+    let { jobProfile_Id, user_Id, userName, mobile, firstName, lastName } =
+      req.body;
+    const resumeFile = (req as any).file;
+    const alreadyApplied = await applicationStatus.findOne({
+      user_Id: user_Id,
+      jobProfile_Id: jobProfile_Id,
+    });
+    if (alreadyApplied) {
+      return res
+        .status(400)
+        .json({ message: "Already applied for this job", alreadyApplied });
+    }
+
+    const appStatus = new applicationStatus({
+      mailID: userName,
+      user_Id: user_Id,
+      jobProfile_Id: jobProfile_Id,
+      jobStatus: "Applied",
+      resumePath: resumeFile?.path,
+      mobileNumber: mobile,
+      fName: firstName,
+      lName: lastName,
+    });
+
+    await appStatus.save();
+    return res
+      .status(200)
+      .json({ message: "Successfully applied for this job", appStatus });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
   }
 };

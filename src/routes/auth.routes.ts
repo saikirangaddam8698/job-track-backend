@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { upload } from "../middleware/upload";
 
 import {
   userAuthLogin,
@@ -12,7 +13,13 @@ import {
   jobPostDetails,
   getJobProfile,
   getSelectedProfile,
+  applyJob,
 } from "../controllers/jobDetails.controller";
+
+import {
+  getJobStatus,
+  getAllJobProfileStatus,
+} from "../controllers/jobStatus.controller";
 // import {authMiddleware} from "../middleware/auth.middleware";
 
 const router = Router();
@@ -25,5 +32,7 @@ router.post("/verifyMailToken", verifyMailToken);
 router.post("/postJobDetails", jobPostDetails);
 router.get("/getJobProfile", getJobProfile);
 router.get("/getSelectedProfile", getSelectedProfile);
-
+router.post("/getJobStatus", getJobStatus);
+router.post("/applyJob", upload.single("resume"), applyJob);
+router.post("/getAllJobProfileStatus", getAllJobProfileStatus);
 export default router;
