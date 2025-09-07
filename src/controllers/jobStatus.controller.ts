@@ -1,6 +1,7 @@
 import { Request, response, Response } from "express";
 import { jobProfile } from "../models/jobDetails";
 import { applicationStatus } from "../models/jobStatus";
+import { error } from "console";
 
 export const getJobStatus = async (req: Request, res: Response) => {
   try {
@@ -57,7 +58,33 @@ export const getAllJobProfileStatus = async (req: Request, res: Response) => {
 
 export const getApplicationCount = async (req: Request, response: Response) => {
   try {
-    let { jobProfile_Id } = req.body;
-    
-  } catch (err: any) {}
+    let { selectedId } = req.body;
+    const Count = await applicationStatus.countDocuments({
+      jobProfile_Id: selectedId,
+      jobStatus: "Applied",
+    });
+
+    return response
+      .status(200)
+      .json({ meassage: "number of applications submitted", Count });
+  } catch (err: any) {
+    return response.status(500).json({ "error:": err.meassage });
+  }
+};
+
+export const getApplicationProfiles = async (
+  req: Request,
+  response: Response
+) => {
+  try {
+    let { jobProfileId } = req.body;
+    const appliedProfiles = await applicationStatus.find({
+      jobProfile_Id: jobProfileId,
+      jobStatus: "Applied",
+    });
+
+    return response.status(200).json({ meassage: "applied profiles", appliedProfiles });
+  } catch (err: any) {
+    return response.status(500).json({ "error:": err.meassage });
+  }
 };
