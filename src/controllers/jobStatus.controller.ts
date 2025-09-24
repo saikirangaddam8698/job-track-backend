@@ -2,6 +2,7 @@ import { Request, response, Response } from "express";
 import { jobProfile } from "../models/jobDetails";
 import { applicationStatus } from "../models/jobStatus";
 import { error } from "console";
+import { request } from "http";
 
 export const getJobStatus = async (req: Request, res: Response) => {
   try {
@@ -14,12 +15,12 @@ export const getJobStatus = async (req: Request, res: Response) => {
     if (alreadyApplied) {
       return res.status(200).json({
         message: "Already applied for this job",
-        jobStatus: alreadyApplied.jobStatus,
+        alreadyApplied,
       });
     }
     return res.status(200).json({
       message: "Not applied for this job",
-      jobStatus: "Apply Now",
+      jobStatus: "ApplyNow",
       alreadyApplied,
     });
   } catch (err: any) {
@@ -34,7 +35,7 @@ export const getAllJobProfileStatus = async (req: Request, res: Response) => {
     if (!user_Id || !Array.isArray(jobProfile_Id)) {
       return res
         .status(400)
-        .json({ message: "required user_Id and jobProfile_Id[] as array" });
+        .json({ message: "required user_Id and jobProfile_Id as array" });
     }
 
     const jobsStatus = await applicationStatus.find({
@@ -46,12 +47,11 @@ export const getAllJobProfileStatus = async (req: Request, res: Response) => {
     const statusMap: Record<string, string> = {};
     jobProfile_Id.forEach((id: string) => {
       const app = jobsStatus.find((a) => a.jobProfile_Id?.toString() === id);
-      statusMap[id] = app ? app.jobStatus : "Not Applied";
+      statusMap[id] = app ? app.jobStatus : "ApplyNow";
     });
 
     return res.status(200).json(statusMap);
   } catch (err: any) {
-    console.error("error something went wrong", err.message);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
@@ -61,7 +61,15 @@ export const getApplicationCount = async (req: Request, response: Response) => {
     let { selectedId } = req.body;
     const Count = await applicationStatus.countDocuments({
       jobProfile_Id: selectedId,
-      jobStatus: "Applied",
+      jobStatus: {
+        $in: [
+          "Applied",
+          "Rejected",
+          "InterviewScheduled",
+          "Selected",
+          "OfferSent",
+        ],
+      },
     });
 
     return response
@@ -80,11 +88,67 @@ export const getApplicationProfiles = async (
     let { jobProfileId } = req.body;
     const appliedProfiles = await applicationStatus.find({
       jobProfile_Id: jobProfileId,
-      jobStatus: "Applied",
+      jobStatus: {
+        $in: [
+          "Applied",
+          "Rejected",
+          "InterviewScheduled",
+          "Selected",
+          "OfferSent",
+        ],
+      },
     });
 
-    return response.status(200).json({ meassage: "applied profiles", appliedProfiles });
+    return response
+      .status(200)
+      .json({ meassage: "applied profiles", appliedProfiles });
   } catch (err: any) {
-    return response.status(500).json({ "error:": err.meassage });
+    return response.status(500).json({ "error:": err.message });
+  }
+};
+
+export const applicationStatusChange = async (req: Request, res: Response) => {
+  try {
+    let { jobProfileId, userId, action, interviewDate } = req.body;
+
+    let update: any = {};
+
+    if (action === "rejected") {
+      update.$set = { jobStatus: "Rejected" };
+    } else if (action === "interviewScheduled") {
+      update.$set = {
+        jobStatus: "InterviewScheduled",
+        interviewDate: new Date(interviewDate),
+      };
+    } else if (action === "interviewCracked") {
+      update.$set = { jobStatus: "Selected" };
+    } else if (action === "sendOffer") {
+      update.$set = { jobStatus: "OfferSent" };
+    } else {
+      return res.status(400).json({ message: "Invalid action type" });
+    }
+
+    const Application = await applicationStatus.findOneAndUpdate(
+      {
+        jobProfile_Id: jobProfileId,
+        user_Id: userId,
+      },
+      update,
+      { new: true }
+    );
+
+    if (!Application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    return res.status(200).json({
+      message:
+        action === "rejected"
+          ? "Profile Rejected"
+          : "Interview Scheduled successfully",
+      Application,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
   }
 };

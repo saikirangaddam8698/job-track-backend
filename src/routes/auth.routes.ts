@@ -21,6 +21,7 @@ import {
   getAllJobProfileStatus,
   getApplicationCount,
   getApplicationProfiles,
+  applicationStatusChange,
 } from "../controllers/jobStatus.controller";
 // import {authMiddleware} from "../middleware/auth.middleware";
 
@@ -35,8 +36,17 @@ router.post("/postJobDetails", jobPostDetails);
 router.get("/getJobProfile", getJobProfile);
 router.get("/getSelectedProfile", getSelectedProfile);
 router.post("/getJobStatus", getJobStatus);
-router.post("/applyJob", upload.single("resume"), applyJob);
+router.post(
+  "/applyJob",
+  upload.fields([
+    { name: "resume", maxCount: 1 },
+    { name: "picture", maxCount: 1 },
+  ]),
+  applyJob
+);
+
 router.post("/getAllJobProfileStatus", getAllJobProfileStatus);
 router.post("/getApplicationCount", getApplicationCount);
 router.post("/getApplicationProfiles", getApplicationProfiles);
+router.post("/applicationStatusChange", applicationStatusChange);
 export default router;

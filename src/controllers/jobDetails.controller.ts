@@ -74,7 +74,13 @@ export const applyJob = async (req: Request, res: Response) => {
   try {
     let { jobProfile_Id, user_Id, userName, mobile, firstName, lastName } =
       req.body;
-    const resumeFile = (req as any).file;
+    const files = req.files as {
+      [fieldname: string]: Express.Multer.File[];
+    };
+
+    const resumeFile = files?.["resume"]?.[0];
+    const pictureFile = files?.["picture"]?.[0];
+
     const alreadyApplied = await applicationStatus.findOne({
       user_Id: user_Id,
       jobProfile_Id: jobProfile_Id,
@@ -85,12 +91,18 @@ export const applyJob = async (req: Request, res: Response) => {
         .json({ message: "Already applied for this job", alreadyApplied });
     }
 
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+
     const appStatus = new applicationStatus({
       mailID: userName,
       user_Id: user_Id,
       jobProfile_Id: jobProfile_Id,
       jobStatus: "Applied",
-      resumePath: resumeFile?.path,
+      resumePath: resumeFile ? `/uploads/resume/${resumeFile.filename}` : null,
+      picturePath: pictureFile
+        ? `/uploads/picture/${pictureFile.filename}`
+        : null,
+
       mobileNumber: mobile,
       fName: firstName,
       lName: lastName,

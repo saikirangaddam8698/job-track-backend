@@ -7,6 +7,9 @@ const useJobStatus = new Schema({
   lName: String,
   fName: String,
   mobileNumber: String,
-  jobStatus: { type: String, default: "Not applied" },
+  resumePath: String,
+  picturePath: String,
+  interviewDate: String,
+  jobStatus: { type: String, default: "ApplyNow" },
 });
 export const applicationStatus = model("applicationStatus", useJobStatus);
