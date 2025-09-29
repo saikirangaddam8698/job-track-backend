@@ -10,6 +10,7 @@ const useJobStatus = new Schema({
   resumePath: String,
   picturePath: String,
   interviewDate: String,
+  interviewAttended: { type: Boolean, default: false },
   jobStatus: { type: String, default: "ApplyNow" },
 });
 export const applicationStatus = model("applicationStatus", useJobStatus);

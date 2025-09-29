@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { jobProfile } from "../models/jobDetails";
 import { applicationStatus } from "../models/jobStatus";
 
+
 export const jobPostDetails = async (req: Request, res: Response) => {
   try {
     let {

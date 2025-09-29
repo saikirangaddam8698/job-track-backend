@@ -25,6 +25,11 @@ import {
 } from "../controllers/jobStatus.controller";
 // import {authMiddleware} from "../middleware/auth.middleware";
 
+import {
+  InterviewStatus,
+  VerifyInterviewStatus,
+} from "../controllers/interview.controller";
+
 const router = Router();
 router.post("/login", userAuthLogin);
 router.post("/signUp", userAuthSignUp);
@@ -49,4 +54,7 @@ router.post("/getAllJobProfileStatus", getAllJobProfileStatus);
 router.post("/getApplicationCount", getApplicationCount);
 router.post("/getApplicationProfiles", getApplicationProfiles);
 router.post("/applicationStatusChange", applicationStatusChange);
+router.post("/VerifyInterviewStatus", VerifyInterviewStatus);
+router.post("/InterviewStatus", InterviewStatus);
+
 export default router;
