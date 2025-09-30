@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { jobProfile } from "../models/jobDetails";
 import { applicationStatus } from "../models/jobStatus";
 
-
 export const jobPostDetails = async (req: Request, res: Response) => {
   try {
     let {
@@ -52,7 +51,64 @@ export const jobPostDetails = async (req: Request, res: Response) => {
 export const getJobProfile = async (req: Request, res: Response) => {
   try {
     const jobs = await jobProfile.find();
-    return res.status(200).json({ message: "fetched jobs", jobs });
+    return res
+      .status(200)
+      .json({ message: "fetched jobs", total: jobs.length, jobs });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Something went wrong" });
+  }
+};
+
+export const getFilteredJobs = async (req: Request, res: Response) => {
+  try {
+    let { userId } = req.body;
+    const appliedCount = await applicationStatus.countDocuments({
+      user_Id: userId,
+      jobStatus: "Applied",
+    });
+
+    const interviewScheduledCount = await applicationStatus.countDocuments({
+      user_Id: userId,
+      jobStatus: "InterviewScheduled",
+    });
+
+    const interviewsTakenCount = await applicationStatus.countDocuments({
+      user_Id: userId,
+      jobStatus: "InterviewAttended",
+    });
+
+    const offerSentCount = await applicationStatus.countDocuments({
+      user_Id: userId,
+      jobStatus: "Selected",
+    });
+
+    const RejectedCount = await applicationStatus.countDocuments({
+      user_Id: userId,
+      jobStatus: "Rejected",
+    });
+
+    const offerRejectedCount = await applicationStatus.countDocuments({
+      user_Id: userId,
+      jobStatus: "offerRejected",
+    });
+
+    const offerAccpetedCount = await applicationStatus.countDocuments({
+      user_Id: userId,
+      jobStatus: "offerAccepted",
+    });
+
+    return res.status(200).json({
+      message: "fetched filtered jobs",
+      stats: {
+        appliedCount: appliedCount,
+        interviewScheduledCount: interviewScheduledCount,
+        interviewsTakenCount: interviewsTakenCount,
+        offerSentCount: offerSentCount,
+        RejectedCount: RejectedCount,
+        offerRejectedCount: offerRejectedCount,
+        offerAccpetedCount: offerAccpetedCount,
+      },
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Something went wrong" });
   }

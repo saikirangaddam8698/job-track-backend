@@ -14,6 +14,7 @@ import {
   getJobProfile,
   getSelectedProfile,
   applyJob,
+  getFilteredJobs,
 } from "../controllers/jobDetails.controller";
 
 import {
@@ -56,5 +57,6 @@ router.post("/getApplicationProfiles", getApplicationProfiles);
 router.post("/applicationStatusChange", applicationStatusChange);
 router.post("/VerifyInterviewStatus", VerifyInterviewStatus);
 router.post("/InterviewStatus", InterviewStatus);
+router.post("/getFilteredJobs", getFilteredJobs);
 
 export default router;
