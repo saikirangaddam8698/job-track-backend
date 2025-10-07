@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Request, Response } from "express";
 import { jobProfile } from "../models/jobDetails";
 import { applicationStatus } from "../models/jobStatus";
@@ -15,6 +16,7 @@ export const jobPostDetails = async (req: Request, res: Response) => {
       aboutCompany,
       skills,
       Responsibilities,
+      postedBy,
     } = req.body;
     function capitalizeWords(str: string) {
       if (!str) return "";
@@ -38,6 +40,7 @@ export const jobPostDetails = async (req: Request, res: Response) => {
       aboutCompany,
       skills,
       Responsibilities,
+      postedBy: new mongoose.Types.ObjectId(postedBy),
     });
     await newJob.save();
     return res.status(200).json({ message: "job posted succesfully", newJob });
@@ -62,55 +65,147 @@ export const getJobProfile = async (req: Request, res: Response) => {
 export const getFilteredJobs = async (req: Request, res: Response) => {
   try {
     let { userId } = req.body;
-    const appliedCount = await applicationStatus.countDocuments({
-      user_Id: userId,
-      jobStatus: "Applied",
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid userId" });
+    }
+    const objectUserId = new mongoose.Types.ObjectId(userId);
+
+    const totalJobsPosted = await jobProfile.countDocuments({
+      postedBy: objectUserId,
     });
 
-    const interviewScheduledCount = await applicationStatus.countDocuments({
-      user_Id: userId,
-      jobStatus: "InterviewScheduled",
-    });
+    const jobsPosted = await jobProfile
+      .find({ postedBy: objectUserId }, { _id: 1 })
+      .lean();
 
-    const interviewsTakenCount = await applicationStatus.countDocuments({
-      user_Id: userId,
-      jobStatus: "InterviewAttended",
-    });
+    const jobIds = jobsPosted.map((job) => job._id);
 
-    const offerSentCount = await applicationStatus.countDocuments({
-      user_Id: userId,
-      jobStatus: "Selected",
-    });
+    if (jobIds.length === 0) {
+      return res.status(200).json({
+        message: "No jobs found for this user",
+        stats: {
+          ApplyNow: 0,
+          Applied: 0,
+          InterviewScheduled: 0,
+          InterviewAttended: 0,
+          Selected: 0,
+          Rejected: 0,
+          offerRejected: 0,
+          offerAccepted: 0,
+        },
+        totalApplications: 0,
+        totalJobsPosted,
+      });
+    }
 
-    const RejectedCount = await applicationStatus.countDocuments({
-      user_Id: userId,
-      jobStatus: "Rejected",
-    });
+    const counts = await applicationStatus.aggregate([
+      { $match: { jobProfile_Id: { $in: jobIds } } },
+      { $group: { _id: "$jobStatus", count: { $sum: 1 } } },
+    ]);
 
-    const offerRejectedCount = await applicationStatus.countDocuments({
-      user_Id: userId,
-      jobStatus: "offerRejected",
-    });
+    const statuses = [
+      "ApplyNow",
+      "Applied",
+      "InterviewScheduled",
+      "InterviewAttended",
+      "Selected",
+      "Rejected",
+      "offerRejected",
+      "offerAccepted",
+    ];
 
-    const offerAccpetedCount = await applicationStatus.countDocuments({
-      user_Id: userId,
-      jobStatus: "offerAccepted",
+    const stats: Record<string, number> = {};
+    let totalApplications = 0;
+
+    statuses.forEach((status) => {
+      const found = counts.find((c) => c._id === status);
+      const count = found ? found.count : 0;
+      stats[status] = count;
+      totalApplications += count;
     });
 
     return res.status(200).json({
-      message: "fetched filtered jobs",
-      stats: {
-        appliedCount: appliedCount,
-        interviewScheduledCount: interviewScheduledCount,
-        interviewsTakenCount: interviewsTakenCount,
-        offerSentCount: offerSentCount,
-        RejectedCount: RejectedCount,
-        offerRejectedCount: offerRejectedCount,
-        offerAccpetedCount: offerAccpetedCount,
-      },
+      message: "Fetched filtered jobs successfully",
+      stats,
+      totalApplications,
+      totalJobsPosted,
     });
   } catch (err: any) {
-    res.status(500).json({ error: err.message || "Something went wrong" });
+    console.error(err);
+    return res
+      .status(500)
+      .json({ error: err.message || "Something went wrong" });
+  }
+};
+
+export const getUserJobCount = async (req: Request, res: Response) => {
+  try {
+    let { userId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: "Invalid userId" });
+    }
+
+    const objectUserId = new mongoose.Types.ObjectId(userId);
+
+    const jobsApplied = await applicationStatus
+      .find({ user_Id: objectUserId })
+      .lean();
+
+    if (!jobsApplied || jobsApplied.length === 0) {
+      return res.status(200).json({
+        message: "This user has not yet applied to any job",
+        stats: {
+          ApplyNow: 0,
+          Applied: 0,
+          InterviewScheduled: 0,
+          InterviewAttended: 0,
+          Selected: 0,
+          Rejected: 0,
+          offerRejected: 0,
+          offerAccepted: 0,
+        },
+        totalApplications: 0,
+      });
+    }
+
+    const counts = await applicationStatus.aggregate([
+      { $match: { user_Id: objectUserId } },
+      { $group: { _id: "$jobStatus", count: { $sum: 1 } } },
+    ]);
+
+    const statuses = [
+      "ApplyNow",
+      "Applied",
+      "InterviewScheduled",
+      "InterviewAttended",
+      "Selected",
+      "Rejected",
+      "offerRejected",
+      "offerAccepted",
+    ];
+
+    const stats: Record<string, number> = {};
+    let totalApplications = 0;
+
+    statuses.forEach((status) => {
+      const found = counts.find((c) => c._id === status);
+      const count = found ? found.count : 0;
+      stats[status] = count;
+      totalApplications += count;
+    });
+
+    return res.status(200).json({
+      message: "Fetched user job application stats successfully",
+      stats,
+      totalApplications,
+    });
+  } catch (err: any) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ error: err.message || "Something went wrong" });
   }
 };
 

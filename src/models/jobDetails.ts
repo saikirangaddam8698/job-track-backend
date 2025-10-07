@@ -12,7 +12,13 @@ const JobSchema = new Schema(
     aboutCompany: { type: String, required: true },
     skills: { type: String, required: true },
     Responsibilities: { type: String, required: false },
+    postedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "userAuth",
+      required: true,
+    },
   },
+
   { timestamps: true }
 );
 
