@@ -53,10 +53,20 @@ export const jobPostDetails = async (req: Request, res: Response) => {
 
 export const getJobProfile = async (req: Request, res: Response) => {
   try {
-    const jobs = await jobProfile.find();
-    return res
-      .status(200)
-      .json({ message: "fetched jobs", total: jobs.length, jobs });
+    const userId = req.query.userId as string;
+    const action = req.query.action as string;
+    console.log(userId, action);
+    if (action === "admin") {
+      const jobs = await jobProfile.find({ postedBy: userId });
+      return res
+        .status(200)
+        .json({ message: "fetched jobs", total: jobs.length, jobs });
+    } else {
+      const jobs = await jobProfile.find();
+      return res
+        .status(200)
+        .json({ message: "fetched jobs", total: jobs.length, jobs });
+    }
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Something went wrong" });
   }
