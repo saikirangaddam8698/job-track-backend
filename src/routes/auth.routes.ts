@@ -32,6 +32,11 @@ import {
   VerifyInterviewStatus,
 } from "../controllers/interview.controller";
 
+import {
+  getNotifications,
+  getNotificationByAction,
+} from "../controllers/notification.controller";
+
 const router = Router();
 router.post("/login", userAuthLogin);
 router.post("/signUp", userAuthSignUp);
@@ -60,5 +65,7 @@ router.post("/VerifyInterviewStatus", VerifyInterviewStatus);
 router.post("/InterviewStatus", InterviewStatus);
 router.post("/getFilteredJobs", getFilteredJobs);
 router.post("/getUserJobCount", getUserJobCount);
+router.post("/getAllNotifications", getNotifications);
+router.post("/getNotificationByAction", getNotificationByAction);
 
 export default router;
