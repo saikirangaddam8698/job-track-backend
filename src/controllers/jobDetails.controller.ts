@@ -57,12 +57,14 @@ export const getJobProfile = async (req: Request, res: Response) => {
     const action = req.query.action as string;
     console.log(userId, action);
     if (action === "admin") {
-      const jobs = await jobProfile.find({ postedBy: userId });
+      const jobs = await jobProfile
+        .find({ postedBy: userId })
+        .sort({ _id: -1 });
       return res
         .status(200)
         .json({ message: "fetched jobs", total: jobs.length, jobs });
     } else {
-      const jobs = await jobProfile.find();
+      const jobs = await jobProfile.find().sort({ _id: -1 });
       return res
         .status(200)
         .json({ message: "fetched jobs", total: jobs.length, jobs });
@@ -234,8 +236,15 @@ export const getSelectedProfile = async (req: Request, res: Response) => {
 
 export const applyJob = async (req: Request, res: Response) => {
   try {
-    let { jobProfile_Id, user_Id, userName, mobile, firstName, lastName } =
-      req.body;
+    let {
+      jobProfile_Id,
+      user_Id,
+      userName,
+      mobile,
+      firstName,
+      lastName,
+      postedBy,
+    } = req.body;
     const files = req.files as {
       [fieldname: string]: Express.Multer.File[];
     };
@@ -268,6 +277,7 @@ export const applyJob = async (req: Request, res: Response) => {
       mobileNumber: mobile,
       fName: firstName,
       lName: lastName,
+      postedBy: postedBy,
     });
 
     await appStatus.save();

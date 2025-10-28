@@ -11,7 +11,7 @@ const notificationSchema = new Schema(
     triggeredBy: {
       type: Schema.Types.ObjectId,
       ref: "userAuth",
-      required: false,
+      required: true,
     },
 
     jobProfile_Id: {
@@ -50,6 +50,26 @@ const notificationSchema = new Schema(
       type: String,
       enum: ["admin", "user"],
       required: true,
+    },
+
+    company: {
+      type: String,
+      required: false,
+    },
+
+    jobRoleName: {
+      type: String,
+      required: false,
+    },
+
+    lName: {
+      type: String,
+      required: false,
+    },
+
+    fName: {
+      type: String,
+      required: false,
     },
   },
   { timestamps: true }

@@ -143,6 +143,7 @@ export const applicationStatusChange = async (req: Request, res: Response) => {
 
     if (action === "Rejected") {
       update.$set = { jobStatus: "Rejected" };
+      
     } else if (action === "interviewScheduled") {
       update.$set = {
         jobStatus: "InterviewScheduled",

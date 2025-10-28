@@ -17,6 +17,12 @@ const useJobStatus = new Schema(
     interviewDate: String,
     interviewAttended: { type: Boolean, default: false },
     jobStatus: { type: String, default: "ApplyNow" },
+
+    postedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "userAuth",
+      required: false,
+    },
   },
   { timestamps: true }
 );

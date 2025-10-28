@@ -35,6 +35,7 @@ import {
 import {
   getNotifications,
   getNotificationByAction,
+  verifyNotifications,
 } from "../controllers/notification.controller";
 
 const router = Router();
@@ -67,5 +68,6 @@ router.post("/getFilteredJobs", getFilteredJobs);
 router.post("/getUserJobCount", getUserJobCount);
 router.post("/getAllNotifications", getNotifications);
 router.post("/getNotificationByAction", getNotificationByAction);
+router.post("/verifyNotifications", verifyNotifications);
 
 export default router;
