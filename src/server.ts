@@ -13,17 +13,21 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use(routes);
 
-const resumeDir = path.join(__dirname, "../../uploads/resume");
-const pictureDir = path.join(__dirname, "../../uploads/picture");
+const resumeDir = path.join(__dirname, "../uploads/resume");
+const pictureDir = path.join(__dirname, "../uploads/picture");
+const profileDir = path.join(__dirname, "../uploads/profilePicture");
 
 if (!fs.existsSync(resumeDir)) fs.mkdirSync(resumeDir, { recursive: true });
 if (!fs.existsSync(pictureDir)) fs.mkdirSync(pictureDir, { recursive: true });
+if (!fs.existsSync(profileDir)) fs.mkdirSync(profileDir, { recursive: true });
 
 app.use("/uploads/resume", express.static(resumeDir));
 app.use("/uploads/picture", express.static(pictureDir));
-
+app.use("/uploads/profilePicture", express.static(profileDir));
 
 // Connect MongoDB
 connectDB();

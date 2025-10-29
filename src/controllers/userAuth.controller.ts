@@ -35,6 +35,7 @@ export const userAuthSignUp = async (req: Request, res: Response) => {
     let { userName, password, firstName, lastName, mobile, gender, age } =
       req.body;
 
+    const file = req.file as Express.Multer.File | undefined;
     userName = userName.trim().toLowerCase();
     const existingUser = await userAuth.findOne({ userName });
 
@@ -53,6 +54,7 @@ export const userAuthSignUp = async (req: Request, res: Response) => {
       mobile,
       role: "user",
       isVerified: false,
+      picture: file ? `/uploads/profilePicture/${file.filename}` : null,
     });
     await newUser.save();
 

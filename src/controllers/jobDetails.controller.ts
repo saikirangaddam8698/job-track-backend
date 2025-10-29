@@ -55,7 +55,6 @@ export const getJobProfile = async (req: Request, res: Response) => {
   try {
     const userId = req.query.userId as string;
     const action = req.query.action as string;
-    console.log(userId, action);
     if (action === "admin") {
       const jobs = await jobProfile
         .find({ postedBy: userId })

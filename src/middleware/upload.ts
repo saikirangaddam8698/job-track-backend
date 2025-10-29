@@ -8,20 +8,16 @@ const storage = multer.diskStorage({
       cb(null, path.join(__dirname, "../../uploads/resume"));
     } else if (file.fieldname === "picture") {
       cb(null, path.join(__dirname, "../../uploads/picture"));
+    } else if (file.fieldname === "profilePicture") {
+      cb(null, path.join(__dirname, "../../uploads/profilePicture"));
     } else {
       cb(new Error("Invalid file field"), "");
     }
   },
   filename: (req, file, cb) => {
-    // preserve extension
     const ext = path.extname(file.originalname);
     const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(null, uniqueName + ext);
-
-    const finalName = uniqueName + ext;
-
-    console.log(`[Multer] Saving file:`, finalName);
-    cb(null, finalName);
   },
 });
 
@@ -34,20 +30,14 @@ const fileFilter = (
 
   if (file.fieldname === "resume") {
     const allowedDocs = [".pdf", ".doc", ".docx"];
-    if (allowedDocs.includes(ext)) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only .pdf, .doc, and .docx files are allowed for resume!"));
-    }
-  } else if (file.fieldname === "picture") {
+    allowedDocs.includes(ext)
+      ? cb(null, true)
+      : cb(new Error("Only .pdf, .doc, and .docx files allowed for resume!"));
+  } else if (["picture", "profilePicture"].includes(file.fieldname)) {
     const allowedImages = [".jpg", ".jpeg", ".png"];
-    if (allowedImages.includes(ext)) {
-      cb(null, true);
-    } else {
-      cb(
-        new Error("Only .jpg, .jpeg, and .png files are allowed for picture!")
-      );
-    }
+    allowedImages.includes(ext)
+      ? cb(null, true)
+      : cb(new Error("Only .jpg, .jpeg, .png files allowed for picture!"));
   } else {
     cb(new Error("Invalid file field"));
   }

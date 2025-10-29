@@ -10,6 +10,7 @@ const userAuthSchema = new Schema({
   age: { type: Number, required: true },
   role: { type: String, enum: ["admin", "user"], default: "user" },
   isVerified: { type: Boolean },
+  picture: { type: String, required: false },
 });
 
 export const userAuth = model("userAuth", userAuthSchema);

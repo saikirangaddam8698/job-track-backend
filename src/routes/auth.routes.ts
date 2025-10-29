@@ -40,7 +40,7 @@ import {
 
 const router = Router();
 router.post("/login", userAuthLogin);
-router.post("/signUp", userAuthSignUp);
+router.post("/signUp", upload.single("profilePicture"), userAuthSignUp);
 router.post("/forgotMail", authForgotMail);
 router.post("/verifyToken", verifyEmailToken);
 router.post("/forgotPasswordPage", authPasswordReset);
