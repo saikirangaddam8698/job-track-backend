@@ -160,7 +160,10 @@ export const authForgotMail = async (req: Request, res: Response) => {
 export const verifyEmailToken = async (req: Request, res: Response) => {
   let { token } = req.body;
   try {
+    console.log("Token received:", token);
+    console.log("JWT_SECRET:", process.env.JWT_SECRET);
     const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    console.log("Decoded:", decoded);
 
     if (typeof decoded === "object" && "userName" in decoded) {
       let userName = (decoded as JwtPayload).userName;
@@ -169,6 +172,7 @@ export const verifyEmailToken = async (req: Request, res: Response) => {
       return res.status(200).json({ message: "Token valid", userName });
     }
   } catch (error: any) {
+    console.error("Token verification failed:", error.message);
     return res
       .status(401)
       .json({ error: "token verification failed", deatils: error.message });
