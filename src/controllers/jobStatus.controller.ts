@@ -116,7 +116,6 @@ export const getApplicationProfiles = async (
         ],
       },
     });
-
     return response
       .status(200)
       .json({ meassage: "applied profiles", appliedProfiles });
@@ -139,11 +138,12 @@ export const applicationStatusChange = async (req: Request, res: Response) => {
       }
     }
 
+    const jobDetails = await jobProfile.findById(jobProfileId);
+
     let update: any = {};
 
     if (action === "Rejected") {
       update.$set = { jobStatus: "Rejected" };
-      
     } else if (action === "interviewScheduled") {
       update.$set = {
         jobStatus: "InterviewScheduled",
@@ -188,14 +188,31 @@ export const applicationStatusChange = async (req: Request, res: Response) => {
         Application.mailID as string,
         "Interview Scheduled",
         `
-          <p>Hello,</p>
-          <p>Your interview is scheduled on <b>${new Date(
-            interviewDate
-          ).toLocaleString()}</b>.</p>
-          <p>Click below to attend the interview (active only around the scheduled time):</p>
-          <a href="${interviewLink}">Attend Interview</a>
-          <p>This link will expire 15 minutes after the scheduled interview time.</p>
-        `
+    <p>Dear Candidate,</p>
+    <p>
+      We are pleased to inform you that your application for the role of 
+      <strong>${jobDetails?.role}</strong> at 
+      <strong>${jobDetails?.company}</strong> has been shortlisted.
+    </p>
+    <p>
+      Your interview has been scheduled for 
+      <b>${new Date(interviewDate).toLocaleString()}</b>.
+    </p>
+    <p>
+      Please click the link below to join the interview (the link will be active only 
+      around the scheduled time):
+    </p>
+    <p>
+      <a href="${interviewLink}" style="color: #1a73e8; text-decoration: none; font-weight: bold;">
+        Attend Interview
+      </a>
+    </p>
+    <p>
+      <small>This link will expire 15 minutes after the scheduled interview time.</small>
+    </p>
+    <br/>
+    <p>Best regards,<br/>HR Team – ${jobDetails?.company}</p>
+  `
       );
     }
 
@@ -215,7 +232,7 @@ export const applicationStatusChange = async (req: Request, res: Response) => {
      <p>Dear ${Application.fName} ${Application.lName},</p>
 
 <p>Congratulations! We are excited to inform you that you have been 
-<b>selected for the role of [Job Title]</b> at <b>[Company Name]</b>.</p>
+<b>selected for the role of <strong>${jobDetails?.role}</strong> at <b> ${jobDetails?.company}</b>.</p>
 
 <p>We truly appreciate the time and effort you put into the interview process. 
 As the next step, please review your <b>official offer letter</b> using the link below:</p>
@@ -234,7 +251,7 @@ As the next step, please review your <b>official offer letter</b> using the link
 
 <p>We look forward to welcoming you onboard and starting this exciting journey together!</p>
 
-<p>Warm regards, Thank you.</p>
+ <p>Warm regards,<br/>HR Team – ${jobDetails?.company}</p>
         `
       );
     }

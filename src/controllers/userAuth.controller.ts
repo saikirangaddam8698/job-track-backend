@@ -196,3 +196,26 @@ export const authPasswordReset = async (req: Request, res: Response) => {
     return res.status(401).json({ error: "server error", err });
   }
 };
+
+export const authProfilePcitureUpdate = async (req: Request, res: Response) => {
+  try {
+    let { Id } = req.body;
+    const file = req.file as Express.Multer.File | undefined;
+
+    if (!file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    const userExist = await userAuth.findById(Id);
+    if (!userExist) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    userExist.picture = `/uploads/profilePicture/${file.filename}`;
+    await userExist.save();
+    return res
+      .status(200)
+      .json({ message: "profile picture updated.", userExist });
+  } catch (err) {
+    return res.status(401).json({ error: "server error", err });
+  }
+};

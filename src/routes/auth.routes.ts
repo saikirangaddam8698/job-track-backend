@@ -8,6 +8,7 @@ import {
   verifyEmailToken,
   authPasswordReset,
   verifyMailToken,
+  authProfilePcitureUpdate,
 } from "../controllers/userAuth.controller";
 import {
   jobPostDetails,
@@ -69,5 +70,11 @@ router.post("/getUserJobCount", getUserJobCount);
 router.post("/getAllNotifications", getNotifications);
 router.post("/getNotificationByAction", getNotificationByAction);
 router.post("/verifyNotifications", verifyNotifications);
+
+router.post(
+  "/authProfilePcitureUpdate",
+  upload.single("profilePicture"),
+  authProfilePcitureUpdate
+);
 
 export default router;
