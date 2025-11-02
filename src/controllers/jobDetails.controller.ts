@@ -51,23 +51,57 @@ export const jobPostDetails = async (req: Request, res: Response) => {
   }
 };
 
+// export const getJobProfile = async (req: Request, res: Response) => {
+//   try {
+//     const userId = req.query.userId as string;
+//     const action = req.query.action as string;
+//     const search = (req.query.search as string) || "";
+//     if (action === "admin") {
+//       const jobs = await jobProfile
+//         .find({ postedBy: userId })
+//         .sort({ _id: -1 });
+//       return res
+//         .status(200)
+//         .json({ message: "fetched jobs", total: jobs.length, jobs });
+//     } else {
+//       const jobs = await jobProfile.find().sort({ _id: -1 });
+//       return res
+//         .status(200)
+//         .json({ message: "fetched jobs", total: jobs.length, jobs });
+//     }
+//   } catch (err: any) {
+//     res.status(500).json({ error: err.message || "Something went wrong" });
+//   }
+// };
+
 export const getJobProfile = async (req: Request, res: Response) => {
   try {
-    const userId = req.query.userId as string;
+    const userid = req.query.userid as string;
     const action = req.query.action as string;
+    const search = (req.query.search as string) || "";
+
+    let filter: any = {};
+
     if (action === "admin") {
-      const jobs = await jobProfile
-        .find({ postedBy: userId })
-        .sort({ _id: -1 });
-      return res
-        .status(200)
-        .json({ message: "fetched jobs", total: jobs.length, jobs });
-    } else {
-      const jobs = await jobProfile.find().sort({ _id: -1 });
-      return res
-        .status(200)
-        .json({ message: "fetched jobs", total: jobs.length, jobs });
+      filter.postedBy = userid;
     }
+
+    if (search.trim() !== "") {
+      filter.$or = [
+        { role: { $regex: search, $options: "i" } },
+        { company: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        {
+          location: { $regex: search, $options: "i" },
+        },
+      ];
+    }
+
+    const jobs = await jobProfile.find(filter).sort({ _id: -1 });
+
+    return res
+      .status(200)
+      .json({ message: "fetched jobs", total: jobs.length, jobs });
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Something went wrong" });
   }
