@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { upload } from "../middleware/upload";
+import express from "express";
 
 import {
   userAuthLogin,
@@ -75,6 +76,29 @@ router.post(
   "/authProfilePcitureUpdate",
   upload.single("profilePicture"),
   authProfilePcitureUpdate
+);
+
+router.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    if (err instanceof Error && err.message.includes("Only")) {
+      return res.status(400).json({ message: err.message });
+    }
+
+    if (err.message === "Invalid file field") {
+      return res
+        .status(400)
+        .json({ message: "Invalid file field in upload request." });
+    }
+
+    return res
+      .status(500)
+      .json({ message: "File upload failed.", error: err.message });
+  }
 );
 
 export default router;
