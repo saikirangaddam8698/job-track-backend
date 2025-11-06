@@ -5,6 +5,7 @@ import { userAuth } from "../models/user.auth";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { sendEmail } from "../utils/sendMails";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 export const verifyMailToken = async (req: Request, res: Response) => {
   let { token } = req.body;
@@ -64,7 +65,7 @@ export const userAuthSignUp = async (req: Request, res: Response) => {
       { expiresIn: "15m" }
     );
 
-    const verifyLink = `http://localhost:5173/signUpMailVerificationPage?token=${mailVerifyToken}`;
+    const verifyLink = `${FRONTEND_URL}/signUpMailVerificationPage?token=${mailVerifyToken}`;
 
     await sendEmail(
       newUser.userName,
@@ -138,7 +139,7 @@ export const authForgotMail = async (req: Request, res: Response) => {
       { expiresIn: "15m" }
     );
 
-    const resetLink = `http://localhost:5173/forgotPasswordPage?token=${resetToken}`;
+    const resetLink = `${FRONTEND_URL}/forgotPasswordPage?token=${resetToken}`;
 
     await sendEmail(
       isMailExist.userName,

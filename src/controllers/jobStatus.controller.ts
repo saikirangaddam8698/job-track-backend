@@ -5,6 +5,7 @@ import { error } from "console";
 import { request } from "http";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { sendEmail } from "../utils/sendMails";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 export const getJobStatus = async (req: Request, res: Response) => {
   try {
@@ -182,7 +183,7 @@ export const applicationStatusChange = async (req: Request, res: Response) => {
         { expiresIn: expireSeconds > 0 ? expireSeconds : "15m" }
       );
 
-      const interviewLink = `http://localhost:5173/user/interviewScreen?token=${resetToken}`;
+      const interviewLink = `${FRONTEND_URL}/user/interviewScreen?token=${resetToken}`;
 
       await sendEmail(
         Application.mailID as string,
@@ -222,7 +223,7 @@ export const applicationStatusChange = async (req: Request, res: Response) => {
         process.env.JWT_SECRET!
       );
 
-      const offerReceived = `http://localhost:5173/user/offerReceived?token=${resetToken}`;
+      const offerReceived = `${FRONTEND_URL}/user/offerReceived?token=${resetToken}`;
 
       await sendEmail(
         Application.mailID as string,
