@@ -1,4 +1,5 @@
 "use strict";
+// src/utils/sendMail.ts
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -8,7 +9,9 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 const sendEmail = async (to, subject, html) => {
     try {
         const transporter = nodemailer_1.default.createTransport({
-            service: "gmail",
+            host: process.env.SMTP_HOST || "smtp.gmail.com",
+            port: parseInt(process.env.SMTP_PORT || "465"),
+            secure: true,
             auth: {
                 user: process.env.GMAIL_USER,
                 pass: process.env.GMAIL_APP_PASSWORD,

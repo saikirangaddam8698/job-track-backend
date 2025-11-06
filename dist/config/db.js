@@ -7,7 +7,7 @@ exports.connectDB = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const connectDB = async () => {
     try {
-        await mongoose_1.default.connect(process.env.MONGO_URI || "");
+        await mongoose_1.default.connect(process.env.MONGODB_URI || "");
         console.log("MongoDB connected successfully");
     }
     catch (error) {
@@ -16,4 +16,3 @@ const connectDB = async () => {
     }
 };
 exports.connectDB = connectDB;
-
