@@ -5,6 +5,7 @@ import { userAuth } from "../models/user.auth";
 import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { sendEmail } from "../utils/sendMails";
+import { error } from "console";
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 export const verifyMailToken = async (req: Request, res: Response) => {
@@ -85,7 +86,7 @@ export const userAuthSignUp = async (req: Request, res: Response) => {
     if (err.code === 11000) {
       return res.status(400).json({ message: "User already exists!" });
     }
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: err.meassage });
   }
 };
 
