@@ -10,8 +10,9 @@ const sendEmail = async (to, subject, html) => {
     try {
         const transporter = nodemailer_1.default.createTransport({
             host: process.env.SMTP_HOST || "smtp.gmail.com",
-            port: parseInt(process.env.SMTP_PORT || "465"),
-            secure: true,
+            port: parseInt(process.env.SMTP_PORT || "587"),
+            secure: false,
+            requireTLS: true,
             auth: {
                 user: process.env.GMAIL_USER,
                 pass: process.env.GMAIL_APP_PASSWORD,
