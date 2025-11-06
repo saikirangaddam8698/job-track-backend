@@ -10,6 +10,7 @@ const user_auth_1 = require("../models/user.auth");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const sendMails_1 = require("../utils/sendMails");
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 const verifyMailToken = async (req, res) => {
     let { token } = req.body;
     try {
@@ -57,7 +58,7 @@ const userAuthSignUp = async (req, res) => {
         });
         await newUser.save();
         const mailVerifyToken = jsonwebtoken_1.default.sign({ userName: newUser.userName, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: "15m" });
-        const verifyLink = `http://localhost:5173/signUpMailVerificationPage?token=${mailVerifyToken}`;
+        const verifyLink = `${FRONTEND_URL}/signUpMailVerificationPage?token=${mailVerifyToken}`;
         await (0, sendMails_1.sendEmail)(newUser.userName, "Verify Your Email - App Tracker", `
         <p>Hello,</p>
         <p>Thank you for signing up. Please click the link below to verify your account:</p>
@@ -112,7 +113,7 @@ const authForgotMail = async (req, res) => {
             return res.status(404).json({ message: "User Doesn't exist" });
         }
         const resetToken = jsonwebtoken_1.default.sign({ userName: isMailExist.userName }, process.env.JWT_SECRET, { expiresIn: "15m" });
-        const resetLink = `http://localhost:5173/forgotPasswordPage?token=${resetToken}`;
+        const resetLink = `${FRONTEND_URL}/forgotPasswordPage?token=${resetToken}`;
         await (0, sendMails_1.sendEmail)(isMailExist.userName, "Reset your Login Password", `
         <p>Hello,</p>
         <p>You requested a password reset. Click the link below to reset your password:</p>

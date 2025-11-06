@@ -8,6 +8,7 @@ const jobDetails_1 = require("../models/jobDetails");
 const jobStatus_1 = require("../models/jobStatus");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const sendMails_1 = require("../utils/sendMails");
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 const getJobStatus = async (req, res) => {
     try {
         let { user_Id, jobProfile_Id, token } = req.body;
@@ -167,7 +168,7 @@ const applicationStatusChange = async (req, res) => {
             const expireSeconds = Math.floor((new Date(interviewDate).getTime() - Date.now()) / 1000) +
                 15 * 60;
             const resetToken = jsonwebtoken_1.default.sign({ mailID: Application.mailID, jobProfileId, userId }, process.env.JWT_SECRET, { expiresIn: expireSeconds > 0 ? expireSeconds : "15m" });
-            const interviewLink = `http://localhost:5173/user/interviewScreen?token=${resetToken}`;
+            const interviewLink = `${FRONTEND_URL}/user/interviewScreen?token=${resetToken}`;
             await (0, sendMails_1.sendEmail)(Application.mailID, "Interview Scheduled", `
     <p>Dear Candidate,</p>
     <p>
@@ -197,7 +198,7 @@ const applicationStatusChange = async (req, res) => {
         }
         if (action === "Selected") {
             const resetToken = jsonwebtoken_1.default.sign({ mailID: Application.mailID, jobProfileId, userId }, process.env.JWT_SECRET);
-            const offerReceived = `http://localhost:5173/user/offerReceived?token=${resetToken}`;
+            const offerReceived = `${FRONTEND_URL}/user/offerReceived?token=${resetToken}`;
             await (0, sendMails_1.sendEmail)(Application.mailID, "Congratulations :)", `
         
      <p>Dear ${Application.fName} ${Application.lName},</p>
