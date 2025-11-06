@@ -86,9 +86,7 @@ export const userAuthSignUp = async (req: Request, res: Response) => {
     if (err.code === 11000) {
       return res.status(400).json({ message: "User already exists!" });
     }
-    return res
-      .status(500)
-      .json({ error: "Server error", details: err.message });
+    return res.status(500).json({ error: "Server error", details: err });
   }
 };
 
