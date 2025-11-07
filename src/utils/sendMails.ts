@@ -2,21 +2,23 @@
 
 import * as SibApiV3Sdk from "@sendinblue/client";
 
-// 1. Create a configuration object
-const config: any = {
-  apiKey: process.env.SENDINBLUE_API_KEY,
-};
+// Initialize the API Client
+const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
-// 2. Initialize the API Client using the configuration object
-// This is the TypeScript-safe way to pass the API Key.
-const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi(config);
+// Set the API key
+if (process.env.SENDINBLUE_API_KEY) {
+  apiInstance.setApiKey(
+    SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
+    process.env.SENDINBLUE_API_KEY
+  );
+}
 
 /**
  * Sends a transactional email using the Brevo HTTP API (Port 443).
  */
 export const sendEmail = async (to: string, subject: string, html: string) => {
   try {
-    // Check for API key existence before proceeding
+    // Check for API key existence before proceeding (good practice)
     if (!process.env.SENDINBLUE_API_KEY) {
       throw new Error("Missing Brevo API Key. Cannot send email.");
     }
@@ -24,7 +26,6 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
 
     // Set the email content using the API object model
-    // Use ! to assert that the variables are present, resolving previous TS errors.
     sendSmtpEmail.sender = {
       email: process.env.EMAIL_SENDER!, // Assumes EMAIL_SENDER is set
       name: "App Tracker",
