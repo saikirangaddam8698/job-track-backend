@@ -1,10 +1,7 @@
-import { Request, response, Response } from "express";
-import { jobProfile } from "../models/jobDetails";
+import { Request, Response } from "express";
 import { applicationStatus } from "../models/jobStatus";
-import { error } from "console";
-import { request } from "http";
+
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { sendEmail } from "../utils/sendMails";
 
 export const InterviewStatus = async (req: Request, res: Response) => {
   const { token } = req.body;
@@ -20,7 +17,7 @@ export const InterviewStatus = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid token payload" });
     }
 
-    const { mailID, jobProfileId, userId } = decoded;
+    const { jobProfileId, userId } = decoded;
 
     const userExist = await applicationStatus.findOne({
       user_Id: userId,
@@ -62,7 +59,7 @@ export const VerifyInterviewStatus = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid token payload" });
     }
 
-    const { mailID, jobProfileId, userId } = decoded;
+    const { jobProfileId, userId } = decoded;
 
     const userExist = await applicationStatus.findOne({
       user_Id: userId,
