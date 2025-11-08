@@ -9,7 +9,6 @@ if (process.env.SENDINBLUE_API_KEY) {
   );
 }
 
-
 export const sendEmail = async (to: string, subject: string, html: string) => {
   try {
     if (!process.env.SENDINBLUE_API_KEY) {
@@ -38,7 +37,6 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
   } catch (error: any) {
     console.error("Error sending email via Brevo API:", error);
 
-    // Log specific API error response text for debugging
     if (error.response && error.response.text) {
       console.error("Brevo API Response Error:", error.response.text);
     }
