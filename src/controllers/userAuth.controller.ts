@@ -6,6 +6,8 @@ import bcrypt from "bcrypt";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { sendEmail } from "../utils/sendMails";
 import { error } from "console";
+import { uploadFileToGCS } from "../middleware/upload";
+
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 export const verifyMailToken = async (req: Request, res: Response) => {
@@ -38,6 +40,9 @@ export const userAuthSignUp = async (req: Request, res: Response) => {
       req.body;
 
     const file = req.file as Express.Multer.File | undefined;
+    const imageUrl = file
+      ? await uploadFileToGCS(file, "profilePicture")
+      : null;
     userName = userName.trim().toLowerCase();
     const existingUser = await userAuth.findOne({ userName });
 
@@ -56,7 +61,7 @@ export const userAuthSignUp = async (req: Request, res: Response) => {
       mobile,
       role: "user",
       isVerified: false,
-      picture: file ? `/uploads/profilePicture/${file.filename}` : null,
+      picture: imageUrl,
     });
     await newUser.save();
 
@@ -212,7 +217,10 @@ export const authProfilePcitureUpdate = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    userExist.picture = `/uploads/profilePicture/${file.filename}`;
+    // userExist.picture = `/uploads/profilePicture/${file.filename}`;
+    // await userExist.save();
+    const imageUrl = await uploadFileToGCS(file, "profilePicture");
+    userExist.picture = imageUrl;
     await userExist.save();
     return res
       .status(200)

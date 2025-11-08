@@ -1,26 +1,12 @@
 import multer, { FileFilterCallback } from "multer";
 import { Request } from "express";
 import path from "path";
+import { bucket } from "../config/googleCloud";
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    if (file.fieldname === "resume") {
-      cb(null, path.join(__dirname, "../../uploads/resume"));
-    } else if (file.fieldname === "picture") {
-      cb(null, path.join(__dirname, "../../uploads/picture"));
-    } else if (file.fieldname === "profilePicture") {
-      cb(null, path.join(__dirname, "../../uploads/profilePicture"));
-    } else {
-      cb(new Error("Invalid file field"), "");
-    }
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueName + ext);
-  },
-});
+// Use memory storage (files stay in RAM instead of local disk)
+const storage = multer.memoryStorage();
 
+// ✅ File type validation (same as before)
 const fileFilter = (
   req: Request,
   file: Express.Multer.File,
@@ -43,4 +29,39 @@ const fileFilter = (
   }
 };
 
+// ✅ Export Multer middleware (same as before)
 export const upload = multer({ storage, fileFilter });
+
+// ✅ Helper function to upload file to Google Cloud Storage
+export const uploadFileToGCS = async (
+  file: Express.Multer.File,
+  folder: string
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    if (!file) return reject("No file uploaded");
+
+    // Unique file name for GCS
+    const gcsFileName = `${folder}/${Date.now()}-${file.originalname}`;
+    const blob = bucket.file(gcsFileName);
+
+    const blobStream = blob.createWriteStream({
+      resumable: false,
+      contentType: file.mimetype,
+      predefinedAcl: "publicRead", // make file publicly readable
+    });
+
+    blobStream.on("error", (err) => {
+      console.error("❌ GCS Upload Error:", err);
+      reject(err);
+    });
+
+    blobStream.on("finish", () => {
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${gcsFileName}`;
+      console.log("✅ File uploaded to GCS:", publicUrl);
+      resolve(publicUrl);
+    });
+
+    // Write file buffer to GCS
+    blobStream.end(file.buffer);
+  });
+};

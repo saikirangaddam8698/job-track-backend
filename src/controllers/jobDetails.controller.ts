@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { Request, Response } from "express";
 import { jobProfile } from "../models/jobDetails";
 import { applicationStatus } from "../models/jobStatus";
+import { uploadFileToGCS } from "../middleware/upload";
 
 export const jobPostDetails = async (req: Request, res: Response) => {
   try {
@@ -278,12 +279,20 @@ export const applyJob = async (req: Request, res: Response) => {
       lastName,
       postedBy,
     } = req.body;
+
     const files = req.files as {
       [fieldname: string]: Express.Multer.File[];
     };
 
     const resumeFile = files?.["resume"]?.[0];
     const pictureFile = files?.["picture"]?.[0];
+
+    const resumeUrl = resumeFile
+      ? await uploadFileToGCS(resumeFile, "resume")
+      : null;
+    const pictureUrl = pictureFile
+      ? await uploadFileToGCS(pictureFile, "picture")
+      : null;
 
     const alreadyApplied = await applicationStatus.findOne({
       user_Id: user_Id,
@@ -302,11 +311,8 @@ export const applyJob = async (req: Request, res: Response) => {
       user_Id: user_Id,
       jobProfile_Id: jobProfile_Id,
       jobStatus: "Applied",
-      resumePath: resumeFile ? `/uploads/resume/${resumeFile.filename}` : null,
-      picturePath: pictureFile
-        ? `/uploads/picture/${pictureFile.filename}`
-        : null,
-
+      resumePath: resumeUrl,
+      picturePath: pictureUrl,
       mobileNumber: mobile,
       fName: firstName,
       lName: lastName,
