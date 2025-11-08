@@ -3,10 +3,10 @@ import { Request } from "express";
 import path from "path";
 import { bucket } from "../config/googleCloud";
 
-// Use memory storage (files stay in RAM instead of local disk)
+// 🟢 Use memory storage so files stay in RAM
 const storage = multer.memoryStorage();
 
-// ✅ File type validation (same as before)
+// ✅ Validate allowed file types
 const fileFilter = (
   req: Request,
   file: Express.Multer.File,
@@ -29,10 +29,10 @@ const fileFilter = (
   }
 };
 
-// ✅ Export Multer middleware (same as before)
+// ✅ Export Multer middleware
 export const upload = multer({ storage, fileFilter });
 
-// ✅ Helper function to upload file to Google Cloud Storage
+// ✅ Upload helper (UBLA-compatible — no ACLs)
 export const uploadFileToGCS = async (
   file: Express.Multer.File,
   folder: string
@@ -40,14 +40,14 @@ export const uploadFileToGCS = async (
   return new Promise((resolve, reject) => {
     if (!file) return reject("No file uploaded");
 
-    // Unique file name for GCS
+    // Create unique filename
     const gcsFileName = `${folder}/${Date.now()}-${file.originalname}`;
     const blob = bucket.file(gcsFileName);
 
+    // ⚠️ Removed predefinedAcl — UBLA does not allow ACLs
     const blobStream = blob.createWriteStream({
       resumable: false,
       contentType: file.mimetype,
-      predefinedAcl: "publicRead", // make file publicly readable
     });
 
     blobStream.on("error", (err) => {
@@ -56,12 +56,13 @@ export const uploadFileToGCS = async (
     });
 
     blobStream.on("finish", () => {
+      // 🟢 Standard public URL — works since bucket-level access is public
       const publicUrl = `https://storage.googleapis.com/${bucket.name}/${gcsFileName}`;
       console.log("✅ File uploaded to GCS:", publicUrl);
       resolve(publicUrl);
     });
 
-    // Write file buffer to GCS
+    // Write file data to Google Cloud Storage
     blobStream.end(file.buffer);
   });
 };
