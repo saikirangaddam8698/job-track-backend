@@ -1,11 +1,7 @@
-// src/utils/sendMail.ts
-
 import * as SibApiV3Sdk from "@sendinblue/client";
 
-// Initialize the API Client
 const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
-// Set the API key
 if (process.env.SENDINBLUE_API_KEY) {
   apiInstance.setApiKey(
     SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey,
@@ -13,12 +9,9 @@ if (process.env.SENDINBLUE_API_KEY) {
   );
 }
 
-/**
- * Sends a transactional email using the Brevo HTTP API (Port 443).
- */
+
 export const sendEmail = async (to: string, subject: string, html: string) => {
   try {
-    // Check for API key existence before proceeding (good practice)
     if (!process.env.SENDINBLUE_API_KEY) {
       throw new Error("Missing Brevo API Key. Cannot send email.");
     }
