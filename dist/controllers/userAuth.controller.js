@@ -10,6 +10,7 @@ const user_auth_1 = require("../models/user.auth");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const sendMails_1 = require("../utils/sendMails");
+const upload_1 = require("../middleware/upload");
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 const verifyMailToken = async (req, res) => {
     let { token } = req.body;
@@ -38,6 +39,9 @@ const userAuthSignUp = async (req, res) => {
     try {
         let { userName, password, firstName, lastName, mobile, gender, age } = req.body;
         const file = req.file;
+        const imageUrl = file
+            ? await (0, upload_1.uploadFileToGCS)(file, "profilePicture")
+            : null;
         userName = userName.trim().toLowerCase();
         const existingUser = await user_auth_1.userAuth.findOne({ userName });
         if (existingUser) {
@@ -54,7 +58,7 @@ const userAuthSignUp = async (req, res) => {
             mobile,
             role: "user",
             isVerified: false,
-            picture: file ? `/uploads/profilePicture/${file.filename}` : null,
+            picture: imageUrl,
         });
         await newUser.save();
         const mailVerifyToken = jsonwebtoken_1.default.sign({ userName: newUser.userName, role: newUser.role }, process.env.JWT_SECRET, { expiresIn: "15m" });
@@ -177,7 +181,10 @@ const authProfilePcitureUpdate = async (req, res) => {
         if (!userExist) {
             return res.status(404).json({ message: "User not found" });
         }
-        userExist.picture = `/uploads/profilePicture/${file.filename}`;
+        // userExist.picture = `/uploads/profilePicture/${file.filename}`;
+        // await userExist.save();
+        const imageUrl = await (0, upload_1.uploadFileToGCS)(file, "profilePicture");
+        userExist.picture = imageUrl;
         await userExist.save();
         return res
             .status(200)

@@ -7,6 +7,7 @@ exports.applyJob = exports.getSelectedProfile = exports.getUserJobCount = export
 const mongoose_1 = __importDefault(require("mongoose"));
 const jobDetails_1 = require("../models/jobDetails");
 const jobStatus_1 = require("../models/jobStatus");
+const upload_1 = require("../middleware/upload");
 const jobPostDetails = async (req, res) => {
     try {
         let { role, company, experience, mailId, jobDescription, location, jobType, aboutCompany, skills, Responsibilities, postedBy, } = req.body;
@@ -243,6 +244,12 @@ const applyJob = async (req, res) => {
         const files = req.files;
         const resumeFile = files?.["resume"]?.[0];
         const pictureFile = files?.["picture"]?.[0];
+        const resumeUrl = resumeFile
+            ? await (0, upload_1.uploadFileToGCS)(resumeFile, "resume")
+            : null;
+        const pictureUrl = pictureFile
+            ? await (0, upload_1.uploadFileToGCS)(pictureFile, "picture")
+            : null;
         const alreadyApplied = await jobStatus_1.applicationStatus.findOne({
             user_Id: user_Id,
             jobProfile_Id: jobProfile_Id,
@@ -258,10 +265,8 @@ const applyJob = async (req, res) => {
             user_Id: user_Id,
             jobProfile_Id: jobProfile_Id,
             jobStatus: "Applied",
-            resumePath: resumeFile ? `/uploads/resume/${resumeFile.filename}` : null,
-            picturePath: pictureFile
-                ? `/uploads/picture/${pictureFile.filename}`
-                : null,
+            resumePath: resumeUrl,
+            picturePath: pictureUrl,
             mobileNumber: mobile,
             fName: firstName,
             lName: lastName,
