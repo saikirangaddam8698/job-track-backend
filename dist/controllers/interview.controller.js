@@ -15,7 +15,7 @@ const InterviewStatus = async (req, res) => {
             !decoded.userId) {
             return res.status(400).json({ error: "Invalid token payload" });
         }
-        const { mailID, jobProfileId, userId } = decoded;
+        const { jobProfileId, userId } = decoded;
         const userExist = await jobStatus_1.applicationStatus.findOne({
             user_Id: userId,
             jobProfile_Id: jobProfileId,
@@ -50,7 +50,7 @@ const VerifyInterviewStatus = async (req, res) => {
             !decoded.userId) {
             return res.status(400).json({ error: "Invalid token payload" });
         }
-        const { mailID, jobProfileId, userId } = decoded;
+        const { jobProfileId, userId } = decoded;
         const userExist = await jobStatus_1.applicationStatus.findOne({
             user_Id: userId,
             jobProfile_Id: jobProfileId,
